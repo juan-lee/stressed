@@ -1,0 +1,7 @@
+version: "2"
+domain: jpang.dev
+repo: github.com/juan-lee/stressed
+resources:
+- group: stressed
+  version: v1alpha1
+  kind: Test

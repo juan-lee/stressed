@@ -1,0 +1,7 @@
+apiVersion: stressed.jpang.dev/v1alpha1
+kind: Test
+metadata:
+  name: test-sample
+spec:
+  # Add fields here
+  foo: bar
