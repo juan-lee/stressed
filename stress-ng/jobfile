@@ -1,0 +1,9 @@
+run sequential   # run stressors sequentially
+verbose          # verbose output
+metrics-brief    # show metrics at end of run
+timeout 60s      # stop each stressor after 60 seconds
+
+#
+# vm stressor options:
+#
+vm 1             # 2 vm stressors

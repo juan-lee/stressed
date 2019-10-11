@@ -1,6 +1,7 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG ?= jpangms/controller:latest
+STRESS_IMG ?= jpangms/stress-ng:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -53,10 +54,12 @@ generate: controller-gen
 # Build the docker image
 docker-build: test
 	docker build . -t ${IMG}
+	docker build stress-ng -t ${STRESS_IMG}
 
 # Push the docker image
 docker-push:
 	docker push ${IMG}
+	docker push ${STRESS_IMG}
 
 # find or download controller-gen
 # download controller-gen if necessary
