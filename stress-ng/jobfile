@@ -3,7 +3,26 @@ verbose          # verbose output
 metrics-brief    # show metrics at end of run
 timeout 60s      # stop each stressor after 60 seconds
 
-#
-# vm stressor options:
-#
-vm 1             # 2 vm stressors
+################################################################################
+# runs 4 cpu stressors, 2 io stressors and 1 vm stressor using 1GB of virtual
+# memory.
+################################################################################
+cpu 4
+io 2
+vm 1
+vm-bytes 1G
+
+################################################################################
+# run 8 virtual memory stressors that combined use 80% of the available memory.
+# Thus each stressor uses 10% of the available memory.
+################################################################################
+#vm 8
+#vm-bytes 80%
+
+################################################################################
+# runs 2 instances of the mixed I/O stressors using a total of 10% of the 
+# available file system space. Each stressor will use 5% of the available file 
+# system space.
+################################################################################
+# iomix 2
+# iomix-bytes 10%

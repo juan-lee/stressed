@@ -17,6 +17,8 @@ package controllers
 
 import (
 	"context"
+	"crypto/sha256"
+	"fmt"
 	"reflect"
 
 	"github.com/go-logr/logr"
@@ -27,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	stressedv1alpha1 "github.com/juan-lee/stressed/api/v1alpha1"
 )
@@ -41,6 +42,13 @@ type TestReconciler struct {
 // +kubebuilder:rbac:groups=stressed.jpang.dev,resources=tests,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=stressed.jpang.dev,resources=tests/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+
+func (r *TestReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&stressedv1alpha1.Test{}).
+		Complete(r)
+}
 
 func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -52,14 +60,18 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if errors.IsNotFound(err) {
 			// Object not found, return.  Created objects are automatically garbage collected.
 			// For additional cleanup logic use finalizers.
-			return reconcile.Result{}, nil
+			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
-		return reconcile.Result{}, err
+		return ctrl.Result{}, err
 	}
 
-	// TODO(jpang): reference jobfile configmap
+	cm, err := r.reconcileConfigMap(ctx, instance)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
 
+	privileged := true
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      instance.Name + "-deployment",
@@ -82,9 +94,37 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
+							SecurityContext: &corev1.SecurityContext{
+								Privileged: &privileged,
+							},
 							Name: instance.Name,
 							// TODO(jpang): hardcoded
 							Image: "jpangms/stress-ng:latest",
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "jobfile",
+									ReadOnly:  true,
+									MountPath: "/stress/jobs",
+								},
+							},
+							Env: []corev1.EnvVar{
+								{
+									Name:  "CONFIG_HASH",
+									Value: fmt.Sprintf("%x", sha256.Sum256([]byte(cm.Data["jobfile"]))),
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "jobfile",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{
+										Name: instance.Name + "-config",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -92,16 +132,18 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		},
 	}
 
+	log.Info("Reconciling Deployment", "deploy", deploy)
+
 	found := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: deploy.Name, Namespace: deploy.Namespace}, found)
 	if err != nil && errors.IsNotFound(err) {
 		log.Info("Creating Deployment", "Namespace", deploy.Namespace, "Name", deploy.Name)
 		err = r.Create(ctx, deploy)
 		if err != nil {
-			return reconcile.Result{}, err
+			return ctrl.Result{}, err
 		}
 	} else if err != nil {
-		return reconcile.Result{}, err
+		return ctrl.Result{}, err
 	}
 
 	if !reflect.DeepEqual(deploy.Spec, found.Spec) {
@@ -109,15 +151,54 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		log.Info("Updating Deployment", "Namespace", deploy.Namespace, "Name", deploy.Name)
 		err = r.Update(ctx, found)
 		if err != nil {
-			return reconcile.Result{}, err
+			return ctrl.Result{}, err
 		}
 	}
-
 	return ctrl.Result{}, nil
 }
 
-func (r *TestReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&stressedv1alpha1.Test{}).
-		Complete(r)
+func (r *TestReconciler) reconcileConfigMap(ctx context.Context, instance *stressedv1alpha1.Test) (*corev1.ConfigMap, error) {
+	log := r.Log.WithValues("test", fmt.Sprintf("%s/%s", instance.Namespace, instance.Name))
+
+	cm := &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      instance.Name + "-config",
+			Namespace: instance.Namespace,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: stressedv1alpha1.GroupVersion.String(),
+					Kind:       "Test",
+					Name:       instance.Name,
+					UID:        instance.UID,
+				},
+			},
+		},
+		Data: map[string]string{
+			"jobfile": instance.Spec.JobFile,
+		},
+	}
+	log.Info("Reconciling ConfigMap", "cm", cm)
+
+	found := &corev1.ConfigMap{}
+	err := r.Get(ctx, types.NamespacedName{Name: cm.Name, Namespace: cm.Namespace}, found)
+	if err != nil && errors.IsNotFound(err) {
+		log.Info("Creating ConfigMap", "Namespace", cm.Namespace, "Name", cm.Name)
+		err = r.Create(ctx, cm)
+		if err != nil {
+			return nil, err
+		}
+	} else if err != nil {
+		return nil, err
+	}
+
+	if !reflect.DeepEqual(cm.Data, found.Data) {
+		found.Data = cm.Data
+		log.Info("Updating ConfigMap", "Namespace", cm.Namespace, "Name", cm.Name)
+		err = r.Update(ctx, found)
+		if err != nil {
+			return nil, err
+		}
+		return found, nil
+	}
+	return cm, nil
 }

@@ -19,6 +19,18 @@ rules:
   - update
   - watch
 - apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - stressed.jpang.dev
   resources:
   - tests
