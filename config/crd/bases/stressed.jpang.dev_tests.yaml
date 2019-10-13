@@ -13,6 +13,8 @@ spec:
     plural: tests
     singular: test
   scope: ""
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: Test is the Schema for the tests API
@@ -32,8 +34,12 @@ spec:
         spec:
           description: TestSpec defines the desired state of Test
           properties:
+            image:
+              description: Image defines the container image the test will use.
+              type: string
             jobFile:
-              description: JobFile
+              description: 'JobFile contains a stress-ng jobfile. More info: `man
+                stress-ng` for possible parameters.'
               type: string
             nodeSelector:
               additionalProperties:

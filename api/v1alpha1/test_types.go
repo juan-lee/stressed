@@ -33,9 +33,12 @@ type TestSpec struct {
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 
 	// Image defines the container image the test will use.
+	// +optional
 	Image string `json:"image,omitempty"`
 
-	// JobFile
+	// JobFile contains a stress-ng jobfile.
+	// More info: `man stress-ng` for possible parameters.
+	// +optional
 	JobFile string `json:"jobFile,omitempty"`
 }
 
@@ -44,6 +47,8 @@ type TestStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
 
 // Test is the Schema for the tests API
 type Test struct {
