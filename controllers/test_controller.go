@@ -86,20 +86,21 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			},
 		},
 		Spec: appsv1.DeploymentSpec{
+			Replicas: instance.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{"deployment": instance.Name + "-deployment"},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{"deployment": instance.Name + "-deployment"}},
 				Spec: corev1.PodSpec{
+					NodeSelector: instance.Spec.NodeSelector,
 					Containers: []corev1.Container{
 						{
 							SecurityContext: &corev1.SecurityContext{
 								Privileged: &privileged,
 							},
-							Name: instance.Name,
-							// TODO(jpang): hardcoded
-							Image: "jpangms/stress-ng:latest",
+							Name:  instance.Name,
+							Image: instance.Spec.Image,
 							VolumeMounts: []corev1.VolumeMount{
 								{
 									Name:      "jobfile",

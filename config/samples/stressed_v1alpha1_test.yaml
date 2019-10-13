@@ -3,7 +3,10 @@ kind: Test
 metadata:
   name: test-sample
 spec:
-  # Add fields here
+  replicas: 1
+  nodeSelector:
+    stressed.jpang.dev/target: test-sample
+  image: jpangms/stress-ng:latest
   jobFile: |
     run sequential   # run stressors sequentially
     verbose          # verbose output
