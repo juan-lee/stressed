@@ -13,6 +13,8 @@ spec:
     plural: tests
     singular: test
   scope: ""
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: Test is the Schema for the tests API
