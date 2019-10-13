@@ -32,8 +32,12 @@ spec:
         spec:
           description: TestSpec defines the desired state of Test
           properties:
+            image:
+              description: Image defines the container image the test will use.
+              type: string
             jobFile:
-              description: JobFile
+              description: 'JobFile contains a stress-ng jobfile. More info: `man
+                stress-ng` for possible parameters.'
               type: string
             nodeSelector:
               additionalProperties:

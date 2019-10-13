@@ -35,7 +35,8 @@ type TestSpec struct {
 	// Image defines the container image the test will use.
 	Image string `json:"image,omitempty"`
 
-	// JobFile
+	// JobFile contains a stress-ng jobfile.
+	// More info: `man stress-ng` for possible parameters.
 	JobFile string `json:"jobFile,omitempty"`
 }
 
