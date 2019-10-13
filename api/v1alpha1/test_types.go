@@ -21,6 +21,20 @@ import (
 
 // TestSpec defines the desired state of Test
 type TestSpec struct {
+	// Number of desired pods. This is a pointer to distinguish between explicit
+	// zero and not specified. Defaults to 1.
+	// +optional
+	Replicas *int32 `json:"replicas,omitempty" protobuf:"varint,1,opt,name=replicas"`
+
+	// NodeSelector is a selector which must be true for the pod to fit on a node.
+	// Selector which must match a node's labels for the pod to be scheduled on that node.
+	// More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
+
+	// Image defines the container image the test will use.
+	Image string `json:"image,omitempty"`
+
 	// JobFile
 	JobFile string `json:"jobFile,omitempty"`
 }
