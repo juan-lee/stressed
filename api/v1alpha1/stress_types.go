@@ -73,6 +73,6 @@ type StressList struct {
 	Items           []Stress `json:"items"`
 }
 
-func init() {
+func init() { // nolint: gochecknoinits
 	SchemeBuilder.Register(&Stress{}, &StressList{})
 }

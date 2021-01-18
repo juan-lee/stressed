@@ -23,7 +23,6 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
-	"github.com/prometheus/common/log"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -58,8 +57,8 @@ func (r *StressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-func (r *StressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = r.Log.WithValues("stress", req.NamespacedName)
+func (r *StressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) { // nolint: funlen
+	log := r.Log.WithValues("stress", req.NamespacedName)
 
 	instance := &testv1alpha1.Stress{}
 	err := r.Get(ctx, req.NamespacedName, instance)
