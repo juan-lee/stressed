@@ -1,4 +1,5 @@
 /*
+Copyright 2021 Juan-Lee Pang.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,39 +23,45 @@ import (
 	"reflect"
 
 	"github.com/go-logr/logr"
+	"github.com/prometheus/common/log"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	stressedv1alpha1 "github.com/juan-lee/stressed/api/v1alpha1"
+	testv1alpha1 "github.com/juan-lee/stressed/api/v1alpha1"
 )
 
-// TestReconciler reconciles a Test object
-type TestReconciler struct {
+// StressReconciler reconciles a Stress object
+type StressReconciler struct {
 	client.Client
-	Log logr.Logger
+	Log    logr.Logger
+	Scheme *runtime.Scheme
 }
 
-// +kubebuilder:rbac:groups=stressed.jpang.dev,resources=tests,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=stressed.jpang.dev,resources=tests/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=test.juan-lee.dev,resources=stresses,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=test.juan-lee.dev,resources=stresses/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=test.juan-lee.dev,resources=stresses/finalizers,verbs=update
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
-func (r *TestReconciler) SetupWithManager(mgr ctrl.Manager) error {
+// SetupWithManager sets up the controller with the Manager.
+func (r *StressReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&stressedv1alpha1.Test{}).
+		For(&testv1alpha1.Stress{}).
 		Complete(r)
 }
 
-func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	log := r.Log.WithValues("test", req.NamespacedName)
+// Reconcile is part of the main kubernetes reconciliation loop which aims to
+// move the current state of the cluster closer to the desired state.
+func (r *StressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	_ = r.Log.WithValues("stress", req.NamespacedName)
 
-	instance := &stressedv1alpha1.Test{}
+	instance := &testv1alpha1.Stress{}
 	err := r.Get(ctx, req.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -78,7 +85,7 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			Namespace: instance.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: stressedv1alpha1.GroupVersion.String(),
+					APIVersion: testv1alpha1.GroupVersion.String(),
 					Kind:       "Test",
 					Name:       instance.Name,
 					UID:        instance.UID,
@@ -158,7 +165,7 @@ func (r *TestReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func (r *TestReconciler) reconcileConfigMap(ctx context.Context, instance *stressedv1alpha1.Test) (*corev1.ConfigMap, error) {
+func (r *StressReconciler) reconcileConfigMap(ctx context.Context, instance *testv1alpha1.Stress) (*corev1.ConfigMap, error) {
 	log := r.Log.WithValues("test", fmt.Sprintf("%s/%s", instance.Namespace, instance.Name))
 
 	cm := &corev1.ConfigMap{
@@ -167,7 +174,7 @@ func (r *TestReconciler) reconcileConfigMap(ctx context.Context, instance *stres
 			Namespace: instance.Namespace,
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion: stressedv1alpha1.GroupVersion.String(),
+					APIVersion: testv1alpha1.GroupVersion.String(),
 					Kind:       "Test",
 					Name:       instance.Name,
 					UID:        instance.UID,

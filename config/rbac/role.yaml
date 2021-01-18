@@ -31,9 +31,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stressed.jpang.dev
+  - test.juan-lee.dev
   resources:
-  - tests
+  - stresses
   verbs:
   - create
   - delete
@@ -43,9 +43,15 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stressed.jpang.dev
+  - test.juan-lee.dev
   resources:
-  - tests/status
+  - stresses/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - test.juan-lee.dev
+  resources:
+  - stresses/status
   verbs:
   - get
   - patch

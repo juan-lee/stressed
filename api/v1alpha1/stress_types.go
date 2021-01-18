@@ -1,4 +1,5 @@
 /*
+Copyright 2021 Juan-Lee Pang.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,8 +20,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// TestSpec defines the desired state of Test
-type TestSpec struct {
+// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
+// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+
+// StressSpec defines the desired state of Stress
+type StressSpec struct {
 	// Number of desired pods. This is a pointer to distinguish between explicit
 	// zero and not specified. Defaults to 1.
 	// +optional
@@ -42,32 +46,33 @@ type TestSpec struct {
 	JobFile string `json:"jobFile,omitempty"`
 }
 
-// TestStatus defines the observed state of Test
-type TestStatus struct {
+// StressStatus defines the observed state of Stress
+type StressStatus struct {
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:storageversion
 
-// Test is the Schema for the tests API
-type Test struct {
+// Stress is the Schema for the stresses API
+type Stress struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   TestSpec   `json:"spec,omitempty"`
-	Status TestStatus `json:"status,omitempty"`
+	Spec   StressSpec   `json:"spec,omitempty"`
+	Status StressStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// TestList contains a list of Test
-type TestList struct {
+// StressList contains a list of Stress
+type StressList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Test `json:"items"`
+	Items           []Stress `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Test{}, &TestList{})
+	SchemeBuilder.Register(&Stress{}, &StressList{})
 }

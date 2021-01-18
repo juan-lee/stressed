@@ -1,0 +1,24 @@
+# permissions for end users to edit stresses.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: stress-editor-role
+rules:
+- apiGroups:
+  - test.juan-lee.dev
+  resources:
+  - stresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - test.juan-lee.dev
+  resources:
+  - stresses/status
+  verbs:
+  - get
