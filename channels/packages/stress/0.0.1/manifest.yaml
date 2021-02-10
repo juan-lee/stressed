@@ -1,0 +1,64 @@
+# apiVersion: v1
+# kind: ServiceAccount
+# metadata:
+#   name: stress
+#   namespace: stress
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress
+  namespace: stress
+  labels:
+    k8s-app: stress
+spec:
+  selector:
+    matchLabels:
+      k8s-app: stress
+  template:
+    metadata:
+      name: stress
+      labels:
+        k8s-app: stress
+    spec:
+      # serviceAccountName: stress
+      containers:
+      - name: stress
+        image: juanlee/stress:v0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: jobfile
+          readOnly: true
+          mountPath: /stress/jobs
+        - name: tmp-dir
+          mountPath: /tmp
+      volumes:
+      - name: jobfile
+        configMap:
+          name: stress-config
+      # mount in tmp so we can safely use from-scratch images and/or read-only containers
+      - name: tmp-dir
+        emptyDir: {}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stress-config
+  namespace: stress
+data:
+  jobfile: |
+    # run sequential   # run stressors sequentially
+    verbose          # verbose output
+    metrics-brief    # show metrics at end of run
+    timeout 60s      # stop each stressor after 60 seconds
+    #
+    # vm stressor options:
+    #
+    vm 2             # 2 vm stressors
+    vm-bytes 128M    # 128MB available memory
+    vm-keep          # keep vm mapping
+    vm-populate      # populate memory
+    #
+    # memcpy stressor options:
+    #
+    memcpy 5         # 5 memcpy stressors

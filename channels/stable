@@ -1,0 +1,3 @@
+manifests:
+- name: stress
+  version: 0.0.1

@@ -1,0 +1,5 @@
+apiVersion: test.juan-lee.dev/v1alpha1
+kind: Stress
+metadata:
+  name: stress-sample
+spec: {}

@@ -1,7 +1,6 @@
-version: "2"
-domain: jpang.dev
+domain: juan-lee.dev
+layout: go.kubebuilder.io/v3-alpha
+projectName: stressed
 repo: github.com/juan-lee/stressed
 resources:
-- group: stressed
-  version: v1alpha1
-  kind: Test
+version: 3-alpha

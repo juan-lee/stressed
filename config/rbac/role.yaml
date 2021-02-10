@@ -7,18 +7,6 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - ""
   resources:
   - configmaps
@@ -31,9 +19,11 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stressed.jpang.dev
+  - ""
   resources:
-  - tests
+  - secrets
+  - serviceaccounts
+  - services
   verbs:
   - create
   - delete
@@ -43,9 +33,40 @@ rules:
   - update
   - watch
 - apiGroups:
-  - stressed.jpang.dev
+  - '*'
   resources:
-  - tests/status
+  - '*'
+  verbs:
+  - list
+- apiGroups:
+  - apps
+  - extensions
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - test.juan-lee.dev
+  resources:
+  - stresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - test.juan-lee.dev
+  resources:
+  - stresses/status
   verbs:
   - get
   - patch
