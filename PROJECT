@@ -3,8 +3,4 @@ layout: go.kubebuilder.io/v3-alpha
 projectName: stressed
 repo: github.com/juan-lee/stressed
 resources:
-- crdVersion: v1
-  group: test
-  kind: Stress
-  version: v1alpha1
 version: 3-alpha

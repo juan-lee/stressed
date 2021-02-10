@@ -7,9 +7,9 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - apps
+  - ""
   resources:
-  - deployments
+  - configmaps
   verbs:
   - create
   - delete
@@ -21,7 +21,28 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - secrets
+  - serviceaccounts
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - '*'
+  resources:
+  - '*'
+  verbs:
+  - list
+- apiGroups:
+  - apps
+  - extensions
+  resources:
+  - deployments
   verbs:
   - create
   - delete
@@ -42,12 +63,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - test.juan-lee.dev
-  resources:
-  - stresses/finalizers
-  verbs:
-  - update
 - apiGroups:
   - test.juan-lee.dev
   resources:

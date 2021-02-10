@@ -1,5 +1,10 @@
+FROM ubuntu:latest as kubectl
+RUN apt-get update
+RUN apt-get install curl -y
+RUN curl -fsSL https://dl.k8s.io/release/v1.17.4/bin/linux/amd64/kubectl > /usr/bin/kubectl
+RUN chmod a+rx /usr/bin/kubectl
 # Build the manager binary
-FROM golang:1.15 as builder
+FROM golang:1.13 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
@@ -13,6 +18,7 @@ RUN go mod download
 COPY main.go main.go
 COPY api/ api/
 COPY controllers/ controllers/
+COPY internal/ internal/
 
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
@@ -22,6 +28,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager 
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
 COPY --from=builder /workspace/manager .
-USER 65532:65532
+COPY --from=kubectl /usr/bin/kubectl /usr/bin/kubectl
+COPY --chown=nonroot:nonroot channels/ channels/
+USER nonroot:nonroot
 
 ENTRYPOINT ["/manager"]

@@ -97,6 +97,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	setupLog.Info("checking for ./channels/stable")
+	_, ferr := os.Stat("./channels/stable")
+	if os.IsNotExist(ferr) {
+		setupLog.Error(ferr, "file does not exist")
+	}
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
